@@ -21,7 +21,6 @@ class EventConsumerCommand extends CommandAbstract
 
     /**
      * Metoda uruchamiająca
-     * @throws DbException
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {

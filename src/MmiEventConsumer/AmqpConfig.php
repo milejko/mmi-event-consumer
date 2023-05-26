@@ -5,7 +5,7 @@ namespace CmsEventPublisher;
 class AmqpConfig
 {
     public string $host;
-    public int $port;
+    public int $port = 5672;
     public string $user;
     public string $password;
     public string $vhost;
@@ -16,7 +16,7 @@ class AmqpConfig
     public bool $exchangePassive = false;
     public bool $exchangeAutodelete = false;
 
-    public string $queueName;
+    public string $queueName = '';
     public string $queueType = 'topic';
     public bool $queueDurable = true;
     public bool $queuePassive = false;
