@@ -16,7 +16,6 @@ class EventConsumerCommand extends CommandAbstract
      */
     public function __construct()
     {
-        
     }
 
     /**
