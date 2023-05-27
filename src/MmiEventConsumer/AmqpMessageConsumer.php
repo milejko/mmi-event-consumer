@@ -39,7 +39,7 @@ class AmqpMessageConsumer implements MessageConsumerInterface
             $this->amqpExchangeConfig->nowait,
         );
 
-        list($queueName, ,) = $channel->queue_declare(
+        $queueDefinition = $channel->queue_declare(
             $this->amqpQueueConfig->name,
             $this->amqpQueueConfig->passive,
             $this->amqpQueueConfig->durable,
@@ -47,6 +47,10 @@ class AmqpMessageConsumer implements MessageConsumerInterface
             $this->amqpQueueConfig->autodelete,
             $this->amqpQueueConfig->nowait,
         );
+        if (!is_array($queueDefinition)) {
+            return;
+        }
+        $queueName = $queueDefinition[0];
 
         $channel->basic_consume(
             $queueName,
