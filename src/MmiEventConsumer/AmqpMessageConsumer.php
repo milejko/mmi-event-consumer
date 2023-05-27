@@ -15,8 +15,7 @@ class AmqpMessageConsumer
         private AmqpExchangeConfig $amqpExchangeConfig = new AmqpExchangeConfig(),
         private AmqpQueueConfig $amqpQueueConfig = new AmqpQueueConfig(),
         private AmqpConsumerConfig $amqpConsumerConfig = new AmqpConsumerConfig(),
-    )
-    {
+    ) {
     }
 
     public function runConsumer(string $exchangeName, string $queueName, callable $callback): void
