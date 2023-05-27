@@ -2,47 +2,60 @@
 
 namespace CmsEventPublisher;
 
+use CmsEventPublisher\Config\AmqpConsumerConfig;
+use CmsEventPublisher\Config\AmqpExchangeConfig;
+use CmsEventPublisher\Config\AmqpQueueConfig;
+use CmsEventPublisher\Config\AmqpServerConfig;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
 class AmqpMessageConsumer
 {
-    public function __construct(private AmqpConfig $amqpConfig)
+    public function __construct(
+        private AmqpServerConfig $amqpServerConfig,
+        private AmqpExchangeConfig $amqpExchangeConfig = new AmqpExchangeConfig(),
+        private AmqpQueueConfig $amqpQueueConfig = new AmqpQueueConfig(),
+        private AmqpConsumerConfig $amqpConsumerConfig = new AmqpConsumerConfig(),
+    )
     {
     }
 
-    public function runConsumer(callable $callback): void
+    public function runConsumer(string $exchangeName, string $queueName, callable $callback): void
     {
         $connection = new AMQPStreamConnection(
-            $this->amqpConfig->host,
-            $this->amqpConfig->port,
-            $this->amqpConfig->user,
-            $this->amqpConfig->password,
-            $this->amqpConfig->vhost
+            $this->amqpServerConfig->host,
+            $this->amqpServerConfig->port,
+            $this->amqpServerConfig->user,
+            $this->amqpServerConfig->password,
+            $this->amqpServerConfig->vhost
         );
         $channel = $connection->channel();
-        //create the exchange if it doesn't exist already
+
         $channel->exchange_declare(
-            $this->amqpConfig->exchangeName,
-            $this->amqpConfig->exchangeType,
-            $this->amqpConfig->exchangePassive,
-            $this->amqpConfig->exchangeDurable,
-            $this->amqpConfig->exchangeAutodelete,
+            $exchangeName,
+            $this->amqpExchangeConfig->type,
+            $this->amqpExchangeConfig->passive,
+            $this->amqpExchangeConfig->durable,
+            $this->amqpExchangeConfig->autodelete,
+            $this->amqpExchangeConfig->internal,
+            $this->amqpExchangeConfig->nowait,
         );
-        //create the queue if it doesn't exist already
+
         $channel->queue_declare(
-            $this->amqpConfig->queueName,
-            $this->amqpConfig->queuePassive,
-            $this->amqpConfig->queueDurable,
-            $this->amqpConfig->queueExclusive,
-            $this->amqpConfig->queueAutodelete,
+            $queueName,
+            $this->amqpQueueConfig->passive,
+            $this->amqpQueueConfig->durable,
+            $this->amqpQueueConfig->exclusive,
+            $this->amqpQueueConfig->autodelete,
+            $this->amqpQueueConfig->nowait,
         );
+
         $channel->basic_consume(
-            $this->amqpConfig->queueName,
-            $this->amqpConfig->consumerTag,
-            false,
-            false,
-            false,
-            false,
+            $queueName,
+            $this->amqpConsumerConfig->tag,
+            $this->amqpConsumerConfig->nolocal,
+            $this->amqpConsumerConfig->noack,
+            $this->amqpConsumerConfig->exclusive,
+            $this->amqpConsumerConfig->nowait,
             $callback
         );
 
