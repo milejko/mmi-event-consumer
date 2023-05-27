@@ -8,17 +8,17 @@ use CmsEventPublisher\Config\AmqpQueueConfig;
 use CmsEventPublisher\Config\AmqpServerConfig;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
-class AmqpMessageConsumer
+class AmqpMessageConsumer implements MessageConsumerInterface
 {
     public function __construct(
         private AmqpServerConfig $amqpServerConfig,
-        private AmqpExchangeConfig $amqpExchangeConfig = new AmqpExchangeConfig(),
+        private AmqpExchangeConfig $amqpExchangeConfig,
         private AmqpQueueConfig $amqpQueueConfig = new AmqpQueueConfig(),
         private AmqpConsumerConfig $amqpConsumerConfig = new AmqpConsumerConfig(),
     ) {
     }
 
-    public function runConsumer(string $exchangeName, string $queueName, callable $callback): void
+    public function runConsumer(callable $callback): void
     {
         $connection = new AMQPStreamConnection(
             $this->amqpServerConfig->host,
@@ -30,7 +30,7 @@ class AmqpMessageConsumer
         $channel = $connection->channel();
 
         $channel->exchange_declare(
-            $exchangeName,
+            $this->amqpExchangeConfig->name,
             $this->amqpExchangeConfig->type,
             $this->amqpExchangeConfig->passive,
             $this->amqpExchangeConfig->durable,
@@ -39,8 +39,8 @@ class AmqpMessageConsumer
             $this->amqpExchangeConfig->nowait,
         );
 
-        $channel->queue_declare(
-            $queueName,
+        list($queueName, ,) = $channel->queue_declare(
+            $this->amqpQueueConfig->name,
             $this->amqpQueueConfig->passive,
             $this->amqpQueueConfig->durable,
             $this->amqpQueueConfig->exclusive,
