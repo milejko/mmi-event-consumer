@@ -1,8 +1,8 @@
 <?php
 
-namespace CmsEventPublisher;
+namespace MmiEventConsumer;
 
 interface MessageConsumerInterface
 {
-    public function runConsumer(callable $callback): void;
+    public function run(callable $callback): void;
 }

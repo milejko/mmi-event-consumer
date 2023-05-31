@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsEventPublisher\Config;
+namespace MmiEventConsumer\Config;
 
 class AmqpServerConfig
 {

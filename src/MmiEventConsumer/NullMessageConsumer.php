@@ -1,8 +1,6 @@
 <?php
 
-namespace CmsEventPublisher;
-
-use PhpAmqpLib\Connection\AMQPStreamConnection;
+namespace MmiEventConsumer;
 
 class NullMessageConsumer implements MessageConsumerInterface
 {
@@ -10,7 +8,7 @@ class NullMessageConsumer implements MessageConsumerInterface
     {
     }
 
-    public function runConsumer(callable $callback): void
+    public function run(callable $callback): void
     {
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
-namespace CmsEventPublisher;
+namespace MmiEventConsumer;
 
-use CmsEventPublisher\Config\AmqpConsumerConfig;
-use CmsEventPublisher\Config\AmqpExchangeConfig;
-use CmsEventPublisher\Config\AmqpQueueConfig;
-use CmsEventPublisher\Config\AmqpServerConfig;
+use MmiEventConsumer\Config\AmqpConsumerConfig;
+use MmiEventConsumer\Config\AmqpExchangeConfig;
+use MmiEventConsumer\Config\AmqpQueueConfig;
+use MmiEventConsumer\Config\AmqpServerConfig;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
 class AmqpMessageConsumer implements MessageConsumerInterface
@@ -18,7 +18,7 @@ class AmqpMessageConsumer implements MessageConsumerInterface
     ) {
     }
 
-    public function runConsumer(callable $callback): void
+    public function run(callable $callback): void
     {
         $connection = new AMQPStreamConnection(
             $this->amqpServerConfig->host,
