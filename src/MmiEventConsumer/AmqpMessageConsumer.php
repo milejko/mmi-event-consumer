@@ -47,10 +47,13 @@ class AmqpMessageConsumer implements MessageConsumerInterface
             $this->amqpQueueConfig->autodelete,
             $this->amqpQueueConfig->nowait,
         );
+
         if (!is_array($queueDefinition)) {
             return;
         }
         $queueName = $queueDefinition[0];
+
+        $channel->queue_bind($queueName, $this->amqpExchangeConfig->name);
 
         $channel->basic_consume(
             $queueName,
