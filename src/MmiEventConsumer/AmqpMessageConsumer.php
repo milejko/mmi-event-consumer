@@ -2,66 +2,87 @@
 
 namespace MmiEventConsumer;
 
-use MmiEventConsumer\Config\AmqpConsumerConfig;
-use MmiEventConsumer\Config\AmqpExchangeConfig;
-use MmiEventConsumer\Config\AmqpQueueConfig;
-use MmiEventConsumer\Config\AmqpServerConfig;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
 class AmqpMessageConsumer implements MessageConsumerInterface
 {
+    private const CONNECTION_INSIST                = false;
+    private const CONNECTION_PROTOCOL              = 'AMQPLAIN';
+    private const CONNECTION_LOGIN_RESPONSE        = null;
+    private const CONNECTION_LOCALE                = 'en_US';
+    private const CONNECTION_TIMEOUT               = 5;
+    private const CONNECTION_READ_WRITE_TIMEOUT    = 5;
+    private const CONNECTION_CONTEXT               = null;
+    private const CONNECTION_KEEPALIVE             = true;
+    private const CONNECTION_HEARTBEAT             = 30;
+
+    private const QUEUE_DURABLE     = true;
+    private const QUEUE_PASSIVE     = false;
+    private const QUEUE_AUTODELETE  = false;
+    private const QUEUE_EXCLUSIVE   = false;
+    private const QUEUE_ROUTING_KEY = '*';
+
+    private const CONSUMER_TAG          = 'mmi-event-consumer';
+    private const CONSUMER_EXCLUSIVE    = false;
+    private const CONSUMER_NOLOCAL      = false;
+    private const CONSUMER_NOACK        = false;
+    private const CONSUMER_NOWAIT       = false;
+
     public function __construct(
-        private AmqpServerConfig $amqpServerConfig,
-        private AmqpExchangeConfig $amqpExchangeConfig,
-        private AmqpQueueConfig $amqpQueueConfig = new AmqpQueueConfig(),
-        private AmqpConsumerConfig $amqpConsumerConfig = new AmqpConsumerConfig(),
+        private string $host,
+        private int $port,
+        private string $user,
+        private string $password,
+        private string $vhost,
     ) {
     }
 
-    public function run(callable $callback): void
-    {
+    public function run(
+        callable $callback,
+        string $exchange = 'sample-exchange-name',
+        string $queue = ''
+    ): void {
         $connection = new AMQPStreamConnection(
-            $this->amqpServerConfig->host,
-            $this->amqpServerConfig->port,
-            $this->amqpServerConfig->user,
-            $this->amqpServerConfig->password,
-            $this->amqpServerConfig->vhost
+            $this->host,
+            $this->port,
+            $this->user,
+            $this->password,
+            $this->vhost,
+            self::CONNECTION_INSIST,
+            self::CONNECTION_PROTOCOL,
+            self::CONNECTION_LOGIN_RESPONSE,
+            self::CONNECTION_LOCALE,
+            self::CONNECTION_TIMEOUT,
+            self::CONNECTION_READ_WRITE_TIMEOUT,
+            self::CONNECTION_CONTEXT,
+            self::CONNECTION_KEEPALIVE,
+            self::CONNECTION_HEARTBEAT,
         );
         $channel = $connection->channel();
 
-        $channel->exchange_declare(
-            $this->amqpExchangeConfig->name,
-            $this->amqpExchangeConfig->type,
-            $this->amqpExchangeConfig->passive,
-            $this->amqpExchangeConfig->durable,
-            $this->amqpExchangeConfig->autodelete,
-            $this->amqpExchangeConfig->internal,
-            $this->amqpExchangeConfig->nowait,
-        );
 
         $queueDefinition = $channel->queue_declare(
-            $this->amqpQueueConfig->name,
-            $this->amqpQueueConfig->passive,
-            $this->amqpQueueConfig->durable,
-            $this->amqpQueueConfig->exclusive,
-            $this->amqpQueueConfig->autodelete,
-            $this->amqpQueueConfig->nowait,
+            $queue,
+            self::QUEUE_PASSIVE,
+            self::QUEUE_DURABLE,
+            self::QUEUE_EXCLUSIVE,
+            self::QUEUE_AUTODELETE,
         );
 
         if (!is_array($queueDefinition)) {
             return;
         }
-        $queueName = $queueDefinition[0];
+        $calculatedQueueName = $queueDefinition[0];
 
-        $channel->queue_bind($queueName, $this->amqpExchangeConfig->name);
+        $channel->queue_bind($calculatedQueueName, $exchange, self::QUEUE_ROUTING_KEY);
 
         $channel->basic_consume(
-            $queueName,
-            $this->amqpConsumerConfig->tag,
-            $this->amqpConsumerConfig->nolocal,
-            $this->amqpConsumerConfig->noack,
-            $this->amqpConsumerConfig->exclusive,
-            $this->amqpConsumerConfig->nowait,
+            $calculatedQueueName,
+            self::CONSUMER_TAG,
+            self::CONSUMER_NOLOCAL,
+            self::CONSUMER_NOACK,
+            self::CONSUMER_EXCLUSIVE,
+            self::CONSUMER_NOWAIT,
             $callback
         );
 
