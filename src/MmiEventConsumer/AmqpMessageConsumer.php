@@ -27,6 +27,7 @@ class AmqpMessageConsumer implements MessageConsumerInterface
     private const CONSUMER_NOLOCAL      = false;
     private const CONSUMER_NOACK        = false;
     private const CONSUMER_NOWAIT       = false;
+    private const CONSUMER_PREFETCH     = 3;
 
     public function __construct(
         private string $host,
@@ -75,6 +76,8 @@ class AmqpMessageConsumer implements MessageConsumerInterface
         $calculatedQueueName = $queueDefinition[0];
 
         $channel->queue_bind($calculatedQueueName, $exchange, self::QUEUE_ROUTING_KEY);
+
+        $channel->basic_qos(null, self::CONSUMER_PREFETCH, null);
 
         $channel->basic_consume(
             $calculatedQueueName,
