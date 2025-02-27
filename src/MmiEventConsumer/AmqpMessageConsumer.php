@@ -22,6 +22,11 @@ class AmqpMessageConsumer implements MessageConsumerInterface
     private const QUEUE_EXCLUSIVE   = false;
     private const QUEUE_ROUTING_KEY = '*';
 
+    private const EXCHANGE_TYPE = 'topic';
+    private const EXCHANGE_DURABLE = true;
+    private const EXCHANGE_PASSIVE = false;
+    private const EXCHANGE_AUTODELETE = false;
+
     private const CONSUMER_TAG          = 'mmi-event-consumer';
     private const CONSUMER_EXCLUSIVE    = false;
     private const CONSUMER_NOLOCAL      = false;
@@ -60,7 +65,6 @@ class AmqpMessageConsumer implements MessageConsumerInterface
         );
         $channel = $connection->channel();
 
-
         $queueDefinition = $channel->queue_declare(
             $queue,
             self::QUEUE_PASSIVE,
@@ -73,6 +77,15 @@ class AmqpMessageConsumer implements MessageConsumerInterface
             return;
         }
         $calculatedQueueName = $queueDefinition[0];
+
+        //create the exchange if it doesn't exist already
+        $channel->exchange_declare(
+            $exchange,
+            self::EXCHANGE_TYPE,
+            self::EXCHANGE_PASSIVE,
+            self::EXCHANGE_DURABLE,
+            self::EXCHANGE_AUTODELETE
+        );
 
         $channel->queue_bind($calculatedQueueName, $exchange, self::QUEUE_ROUTING_KEY);
 
