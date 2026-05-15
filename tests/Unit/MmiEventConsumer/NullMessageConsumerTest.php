@@ -14,7 +14,5 @@ class NullMessageConsumerTest extends TestCase
             function () {
             }
         );
-        $exited = true;
-        self::assertTrue($exited);
     }
 }
