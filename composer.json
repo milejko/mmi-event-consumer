@@ -20,7 +20,7 @@
     },
     "require": {
         "ext-amqp": "*",
-        "mmi/mmi": "^4.1.19",
+        "mmi/mmi": "^5.0",
         "php-amqplib/php-amqplib": "^3.4"
     },
     "scripts": {
